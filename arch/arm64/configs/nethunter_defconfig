@@ -1288,6 +1288,7 @@ CONFIG_HAVE_EBPF_JIT=y
 #
 # Device Drivers
 #
+CONFIG_88XXAU=y
 CONFIG_ARM_AMBA=y
 
 #
