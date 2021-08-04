@@ -20,14 +20,12 @@
 #include <linux/sort.h>
 #include <linux/debugfs.h>
 #include <linux/ktime.h>
-#include <linux/msm_drm_notify.h>
 #include <uapi/drm/sde_drm.h>
 #include <drm/drm_mode.h>
 #include <drm/drm_crtc.h>
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_flip_work.h>
 
-#include "dsi_display.h"
 #include "sde_kms.h"
 #include "sde_hw_lm.h"
 #include "sde_hw_ctl.h"
@@ -66,8 +64,6 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <drm/drm_mipi_dsi.h>
-
-extern int msm_drm_notifier_call_chain(unsigned long val, void *v);
 
 #define SDE_PSTATES_MAX (SDE_STAGE_MAX * 4)
 #define SDE_MULTIRECT_PLANE_MAX (SDE_STAGE_MAX * 2)
@@ -3044,8 +3040,8 @@ int oneplus_get_panel_brightness_to_alpha(void)
 		return bl_to_alpha_dc(display->panel->hbm_backlight);
 }
 
-int oneplus_onscreenaod_hid = 0;
-int oneplus_aod_hid = 0;
+int oneplus_onscreenaod_hid;
+int oneplus_aod_hid;
 ssize_t oneplus_display_notify_aod_hid(struct device *dev,
 		struct device_attribute *attr,
 		const char *buf, size_t count)
@@ -5924,7 +5920,7 @@ static void sde_crtc_install_properties(struct drm_crtc *crtc,
 		CRTC_PROP_IDLE_TIMEOUT);
 
 	msm_property_install_range(&sde_crtc->property_info,
-		"CRTC_CUST", 0, 0, INT_MAX, 0,
+		"CRTC_CUST", 0x0, 0, INT_MAX, 0,
 		CRTC_PROP_CUSTOM);
 
 	msm_property_install_range(&sde_crtc->property_info,

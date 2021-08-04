@@ -3828,7 +3828,7 @@ void sde_encoder_trigger_kickoff_pending(struct drm_encoder *drm_enc)
 
 /*force enable dither on Fingerprint scene */
 extern int op_dimlayer_bl_enable;
-extern bool sde_crtc_get_fingerprint_mode(struct drm_crtc_state *crtc_state);
+extern bool sde_crtc_get_dimlayer_mode(struct drm_crtc_state *crtc_state);
 static bool
 _sde_encoder_setup_dither_for_onscreenfingerprint(struct sde_encoder_phys *phys,
 						  void *dither_cfg, int len)
@@ -3839,7 +3839,7 @@ _sde_encoder_setup_dither_for_onscreenfingerprint(struct sde_encoder_phys *phys,
 	if (!drm_enc || !drm_enc->crtc)
 		return -EFAULT;
 
-	if (!sde_crtc_get_fingerprint_mode(drm_enc->crtc->state))
+	if (!sde_crtc_get_dimlayer_mode(drm_enc->crtc->state))
 		return -EINVAL;
 
 	if (len != sizeof(dither))
