@@ -76,6 +76,8 @@ Module.symvers
 include/config
 include/generated
 arch/*/include/generated
+out
+sdm845.sh
 
 # stgit generated dirs
 patches-*
