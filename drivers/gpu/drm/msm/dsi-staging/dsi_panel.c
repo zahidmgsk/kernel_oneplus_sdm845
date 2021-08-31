@@ -730,8 +730,7 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 
 	return rc;
 }
-
-int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
+static int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
 				enum dsi_cmd_set_type type)
 {
 	int rc = 0, i = 0;
@@ -1794,16 +1793,10 @@ const char *cmd_set_prop_map[DSI_CMD_SET_MAX] = {
 	"qcom,mdss-dsi-panel-hbm-on-command-4",
 	"qcom,mdss-dsi-panel-hbm-on-command-5",
 	"qcom,mdss-dsi-panel-hbm-max-brightness-command-on",
-	"qcom,mdss-dsi-panel-display-p3-mode-on-command",
-	"qcom,mdss-dsi-panel-display-p3-mode-off-command",
-	"qcom,mdss-dsi-panel-display-wide-color-mode-on-command",
-	"qcom,mdss-dsi-panel-display-wide-color-mode-off-command",
 	"qcom,mdss-dsi-panel-display-srgb-color-mode-on-command",
-	"qcom,mdss-dsi-panel-display-srgb-color-mode-off-command",
-	"qcom,mdss-dsi-customer-srgb-enable-command",
-	"qcom,mdss-dsi-customer-srgb-disable-command",
-	"qcom,mdss-dsi-customer-p3-enable-command",
-	"qcom,mdss-dsi-customer-p3-disable-command",
+	"qcom,mdss-dsi-panel-display-p3-mode-on-command",
+	"qcom,mdss-dsi-panel-display-wide-color-mode-on-command",
+	"qcom,mdss-dsi-panel-dci-p3-off-command", // also disables SRGB and wide color modes
 	"qcom,mdss-dsi-panel-aod-on-command-1",
 	"qcom,mdss-dsi-panel-aod-on-command-2",
 	"qcom,mdss-dsi-panel-aod-off-command",
@@ -1842,16 +1835,10 @@ const char *cmd_set_state_map[DSI_CMD_SET_MAX] = {
 	"qcom,mdss-dsi-hbm-on-command-state",
 	"qcom,mdss-dsi-hbm-on-command-state",
 	"qcom,mdss-dsi-panel-hbm-max-brightness-command-on-state",
-	"qcom,mdss-dsi-panel-display-p3-mode-on-command-state",
-	"qcom,mdss-dsi-panel-display-p3-mode-off-command-state",
-	"qcom,mdss-dsi-panel-display-wide-color-mode-on-command-state",
-	"qcom,mdss-dsi-panel-display-wide-color-mode-off-command-state",
 	"qcom,mdss-dsi-panel-display-srgb-color-mode-on-command-state",
-	"qcom,mdss-dsi-panel-display-srgb-color-mode-off-command-state",
-	"qcom,mdss-dsi-customer-srgb-enable-command-state",
-	"qcom,mdss-dsi-customer-srgb-disable-command-state",
-	"qcom,mdss-dsi-customer-p3-enable-command-state",
-	"qcom,mdss-dsi-customer-p3-disable-command-state",
+	"qcom,mdss-dsi-panel-display-p3-mode-on-command-state",
+	"qcom,mdss-dsi-panel-display-wide-color-mode-on-command-state",
+	"qcom,mdss-dsi-panel-dci-p3-off-command-state",
 	"qcom,mdss-dsi-hbm-on-command-state",
 	"qcom,mdss-dsi-aod-on-command-state",
 	"qcom,mdss-dsi-aod-on-command-state",
@@ -4421,135 +4408,5 @@ int dsi_panel_set_aod_mode(struct dsi_panel *panel, int level)
 
 	panel->aod_curr_mode = level;
 	pr_err("AOD MODE = %d\n", level);
-return rc;
-}
-
-int dsi_panel_set_native_display_p3_mode(struct dsi_panel *panel, int level)
-{
-	int rc = 0;
-	u32 count;
-	struct dsi_display_mode *mode;
-
-	if (!panel || !panel->cur_mode) {
-		pr_err("Invalid params\n");
-		return -EINVAL;
-	}
-	mode = panel->cur_mode;
-	mutex_lock(&panel->panel_lock);
-
-	if (level) {
-		count = mode->priv_info->cmd_sets[DSI_CMD_SET_NATIVE_DISPLAY_P3_ON].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NATIVE_DISPLAY_P3_ON);
-		pr_err("Native Display p3 Mode On.\n");
-	} else {
-		count = mode->priv_info->cmd_sets[DSI_CMD_SET_NATIVE_DISPLAY_P3_OFF].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NATIVE_DISPLAY_P3_OFF);
-		pr_err("Native Display p3 Mode Off.\n");
-	}
-	mutex_unlock(&panel->panel_lock);
-	return rc;
-}
-
-int dsi_panel_set_native_display_wide_color_mode(struct dsi_panel *panel, int level)
-{
-	int rc = 0;
-	u32 count;
-	struct dsi_display_mode *mode;
-
-	if (!panel || !panel->cur_mode) {
-		pr_err("Invalid params\n");
-		return -EINVAL;
-	}
-	mode = panel->cur_mode;
-	mutex_lock(&panel->panel_lock);
-
-    if (level) {
-		count = mode->priv_info->cmd_sets[DSI_CMD_SET_NATIVE_DISPLAY_WIDE_COLOR_ON].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NATIVE_DISPLAY_WIDE_COLOR_ON);
-		pr_err("Native wide color Mode On.\n");
-	} else {
-		count = mode->priv_info->cmd_sets[DSI_CMD_SET_NATIVE_DISPLAY_WIDE_COLOR_OFF].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NATIVE_DISPLAY_WIDE_COLOR_OFF);
-		pr_err("Native wide color Mode Off.\n");
-    }
-	mutex_unlock(&panel->panel_lock);
-	return rc;
-}
-
-int dsi_panel_set_native_display_srgb_color_mode(struct dsi_panel *panel, int level)
-{
-	int rc = 0;
-	u32 count;
-	struct dsi_display_mode *mode;
-
-	if (!panel || !panel->cur_mode) {
-		pr_err("Invalid params\n");
-		return -EINVAL;
-	}
-	mode = panel->cur_mode;
-	mutex_lock(&panel->panel_lock);
-
-	if (level) {
-		count = mode->priv_info->cmd_sets[DSI_CMD_SET_NATIVE_DISPLAY_SRGB_COLOR_ON].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NATIVE_DISPLAY_SRGB_COLOR_ON);
-		pr_err("Native srgb color Mode On.\n");
-    } else {
-		count = mode->priv_info->cmd_sets[DSI_CMD_SET_NATIVE_DISPLAY_SRGB_COLOR_OFF].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_NATIVE_DISPLAY_SRGB_COLOR_OFF);
-		pr_err("Native  srgb color Mode Off.\n");
-    }
-	mutex_unlock(&panel->panel_lock);
-return rc;
-}
-
-int dsi_panel_set_customer_srgb_mode(struct dsi_panel *panel, int level)
-{
-	int rc = 0;
-	u32 count;
-	struct dsi_display_mode *mode;
-
-	if (!panel || !panel->cur_mode) {
-		pr_err("Invalid params\n");
-		return -EINVAL;
-	}
-	mode = panel->cur_mode;
-	mutex_lock(&panel->panel_lock);
-
-	if (level) {
-		count = mode->priv_info->cmd_sets[DSI_CMD_LOADING_CUSTOMER_RGB_ON].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_LOADING_CUSTOMER_RGB_ON);
-		pr_err("turn on customer srgb\n");
-    } else {
-		count = mode->priv_info->cmd_sets[DSI_CMD_LOADING_CUSTOMER_RGB_OFF].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_LOADING_CUSTOMER_RGB_OFF);
-		pr_err("turn off customer srgb\n");
-    }
-	mutex_unlock(&panel->panel_lock);
-	return rc;
-}
-
-int dsi_panel_set_customer_p3_mode(struct dsi_panel *panel, int level)
-{
-	int rc = 0;
-	u32 count;
-	struct dsi_display_mode *mode;
-
-	if (!panel || !panel->cur_mode) {
-		pr_err("Invalid params\n");
-		return -EINVAL;
-	}
-	mode = panel->cur_mode;
-	mutex_lock(&panel->panel_lock);
-
-	if (level) {
-		count = mode->priv_info->cmd_sets[DSI_CMD_LOADING_CUSTOMER_P3_ON].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_LOADING_CUSTOMER_P3_ON);
-		pr_err("turn on customer P3\n");
-    } else {
-		count = mode->priv_info->cmd_sets[DSI_CMD_LOADING_CUSTOMER_P3_OFF].count;
-		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_LOADING_CUSTOMER_P3_OFF);
-		pr_err("turn off customer P3\n");
-    }
-	mutex_unlock(&panel->panel_lock);
 return rc;
 }
